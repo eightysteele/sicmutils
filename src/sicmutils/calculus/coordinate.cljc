@@ -123,6 +123,41 @@
     (f 0)
     (s/generate n orientation f)))
 
+;;; The following mappers only make sense if, when there is more than
+;;; one structure they are all isomorphic.
+
+
+(require '[sicmutils.util.aggregate :as ua])
+
+(defn s:sigma:l [f structures]
+  (ua/sum (fn [i]
+	          (apply f (map (fn [s] (nth s i))
+		                      structures)))
+	        0
+	        (count (first structures))))
+
+(defn s:sigma:r:l [f structures]
+  (s:sigma:l (fn [& elements]
+	             (if (s/structure? (first elements))
+		             (s:sigma:r:l f elements)
+		             (apply f elements)))
+	           structures))
+
+(defn s:sigma:r [proc & structures]
+  (s:sigma:r:l proc structures))
+
+(defn s:sigma [proc & structures]
+  (s:sigma:l proc structures))
+
+;;; sigma (proc e_i w^i)
+(defn contract [proc basis]
+  (let [vector-basis  (b/basis->vector-basis basis)
+	      oneform-basis (b/basis->oneform-basis basis)]
+    (s:sigma:r proc
+	             vector-basis
+	             oneform-basis)))
+
+
 (defn vector-basis->dual
   [vector-basis coordinate-system]
   (let [prototype (m/coordinate-prototype coordinate-system)
