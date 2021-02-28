@@ -203,5 +203,8 @@
 (defunary g/conjugate 'conjugate)
 
 (defbinary g/gcd 'gcd)
+
+(defmethod g/simplify [Symbol] [a] a)
 (defmethod g/simplify [::x/numeric] [a]
-  (s/simplify-expression (v/freeze a)))
+  (literal-number
+   (s/simplify-expression (v/freeze a))))
